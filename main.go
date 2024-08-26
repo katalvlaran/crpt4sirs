@@ -19,7 +19,6 @@ const (
 )
 
 func main() {
-
 	// Initialize DB
 	initDB()
 

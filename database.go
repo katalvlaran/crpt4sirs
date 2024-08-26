@@ -12,7 +12,7 @@ import (
 var db *sql.DB
 
 func initDB() {
-	connStr := "user=set password=<> dbname=postgres sslmode=disable" // Use a configuration management system for this
+	connStr := "user=sir password=crpt-pass dbname=crpt4sirs sslmode=disable" // Use a configuration management system for this
 	var err error
 	db, err = sql.Open("postgres", connStr)
 	if err != nil {
