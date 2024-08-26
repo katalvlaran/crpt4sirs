@@ -6,8 +6,6 @@ import (
 	"log"
 	"time"
 
-	"anal/pkg/dtw"
-
 	_ "github.com/adshao/go-binance/v2"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -20,15 +18,7 @@ const (
 	SecretKey      = "31e5e249781567a1dd62f1db80e0bbd5cc5a058b68331a89d5a71058412d6436"
 )
 
-// Analyzes methods
-type Analface interface {
-	Analysis()
-	ConvertForAnal()
-}
-
 func main() {
-
-	dtw.Analysis()
 	// Initialize DB
 	initDB()
 
