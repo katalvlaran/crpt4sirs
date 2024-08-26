@@ -83,6 +83,11 @@ func saveToTable(db *sql.DB, data interface{} /*price string,*/, tableName strin
 	case "orders":
 		stmt, err = db.Prepare(`INSERT INTO orders (symbol, side, otype, price, quantity, signal_id, time)
 	                           VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`)
+	case "testklines":
+		stmt, err = db.Prepare(`INSERT INTO testklines (open_time, close_time, open_price, high_price, low_price, close_price,
+								volume, quote_asset_volume, number_of_trades, taker_buy_base_asset_volume, 
+                       			taker_buy_quote_asset_volume)
+								VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`)
 	default:
 		return 0, fmt.Errorf("unsupported table name")
 	}
@@ -112,6 +117,17 @@ func saveToTable(db *sql.DB, data interface{} /*price string,*/, tableName strin
 		}
 
 		err = stmt.QueryRow(order.Symbol, order.Side, order.OType, order.Price, order.Quantity, order.SignalId, t).Scan(&id)
+
+	case "testklines":
+		btcklines, ok := data.(Klines)
+		if !ok {
+			return 0, fmt.Errorf("invalid data type for btcklines")
+		}
+
+		err = stmt.QueryRow(btcklines.openTime, btcklines.closeTime, btcklines.openPrice, btcklines.highPrice,
+			btcklines.lowPrice, btcklines.closePrice, btcklines.volume, btcklines.quoteAssetVolume,
+			btcklines.numberOfTrades, btcklines.takerBuyBaseAssetVolume, btcklines.takerBuyQuoteAssetVolume).Scan(&id)
+
 	}
 
 	if err != nil {

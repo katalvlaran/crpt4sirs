@@ -2,11 +2,10 @@ package main
 
 import (
 	_ "fmt"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	"strings"
 	"time"
-
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 func processUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI) string {
@@ -39,14 +38,11 @@ func parseSignal(text string) *Signal {
 		return nil
 	}
 
-	//chat := dataSlice[2]
-
 	s := &Signal{
 		PositionSide: dataSlice[0],
 		Symbol:       dataSlice[1] + "USDT",
-		//Chat:         chat,
-		Chat: dataSlice[3],
-		Time: time.Now(),
+		Chat:         dataSlice[2],
+		Time:         time.Now(),
 	}
 
 	_, err := saveToTable(db, *s, "signal")

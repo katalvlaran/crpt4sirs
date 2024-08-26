@@ -1,34 +1,48 @@
 package main
 
 import (
-	_ "context"
+	"context"
 	"fmt"
+	_ "fmt"
 	"log"
+	"os"
 	"time"
 
 	_ "github.com/adshao/go-binance/v2"
+	_ "github.com/adshao/go-binance/v2/futures"
+	"github.com/go-redis/redis/v8"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/joho/godotenv"
 )
 
-const (
-	telegramToken = "6430281663:AAGR0sFbhnJzFxDiKc4NC1VYGQ-iHejJXf8"
-	// test binance:
-	TestnetBaseURL = "https://testnet.binancefuture.com"
-	APIKey         = "a365f1b5f1e4bba5f55e8156139b73c841e4a5578aea7c7496e4b3da16bd0957"
-	SecretKey      = "31e5e249781567a1dd62f1db80e0bbd5cc5a058b68331a89d5a71058412d6436"
-)
+var rdb *redis.Client
 
 func main() {
-	// Initialize DB
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	telegramToken := os.Getenv("telegramToken")
+
+	// Подключение к Redis
+	rdb = redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+
+	var openPositions []string
+
 	initDB()
 
-	// Initialize bot
+	//ParseKlines()
+	//os.Exit(1)
+
 	bot, err := tgbotapi.NewBotAPI(telegramToken)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// request ip: 188.163.12.53
 	bot.Debug = true
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
@@ -39,9 +53,6 @@ func main() {
 		log.Fatal("Failed to get updates:", err)
 	}
 
-	client := createBinanceClient(APIKey, SecretKey)
-	fmt.Println(client)
-
 	for update := range updates {
 		result := processUpdate(update, bot)
 
@@ -51,6 +62,14 @@ func main() {
 			log.Println("Error parsing signal")
 			return
 		}
+
+		lastSymbol := sign.Symbol
+		err := rdb.Set(context.Background(), "last_open_time", lastSymbol, 0).Err()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		openPositions = append(openPositions, lastSymbol)
 
 		// создание нового ордера
 		NewMarketOrder(*sign)
@@ -67,5 +86,8 @@ func main() {
 
 		StopLossOrder(*sign)
 
+		fmt.Println(lastSymbol)
+
+		fmt.Println(openPositions)
 	}
 }

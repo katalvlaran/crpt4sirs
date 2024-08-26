@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/adshao/go-binance/v2"
+	_ "github.com/adshao/go-binance/v2"
 	//_ "github.com/adshao/go-binance/v2"
 	"github.com/adshao/go-binance/v2/futures"
 	"log"
@@ -32,9 +33,6 @@ type Order struct {
 
 var amount = 5.00        // $$ на ордер
 var quantityOfOrders = 4 // количество ордеров Take Profit
-var futuresClient = createBinanceClient(APIKey, SecretKey)
-
-//futuresClient := binance.NewFuturesClient(APIKey, SecretKey)
 
 // сбор ордера
 func NewMarketOrder(sign Signal) {
@@ -61,7 +59,7 @@ func NewMarketOrder(sign Signal) {
 		fmt.Println()
 	}
 
-	order, err := futuresClient.NewCreateOrderService().Symbol(ord.Symbol).
+	order, err := BinFutCl().NewCreateOrderService().Symbol(ord.Symbol).
 		Side(futures.SideType(ord.Side)).Type(futures.OrderType(binance.OrderTypeMarket)).
 		Quantity(ord.Quantity).PriceProtect(true).
 		Do(context.Background())
@@ -90,7 +88,7 @@ func NewMarketOrder(sign Signal) {
 // проверка стоимости монеты
 func CheckSymbolPrice(str string, sign Signal) float64 {
 
-	prices, err := futuresClient.NewListPricesService().Symbol(sign.Symbol).Do(context.Background())
+	prices, err := BinFutCl().NewListPricesService().Symbol(sign.Symbol).Do(context.Background())
 	if err != nil {
 		fmt.Println(prices, err)
 	}
@@ -190,7 +188,7 @@ func PriceNormalizer(ordPrice float64) string {
 // проверяем цену входа открытой сделки
 func CheckOpenPositionPrice(sign Signal) string {
 
-	accountInfo, err := futuresClient.NewGetAccountService().Do(context.Background())
+	accountInfo, err := BinFutCl().NewGetAccountService().Do(context.Background())
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -207,7 +205,7 @@ func CheckOpenPositionPrice(sign Signal) string {
 // проверяем количество монет открытой сделки
 func CheckOpenPositionQuantity(sign Signal) string {
 
-	accountInfo, err := futuresClient.NewGetAccountService().Do(context.Background())
+	accountInfo, err := BinFutCl().NewGetAccountService().Do(context.Background())
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -268,7 +266,7 @@ func AddOrders(sign Signal) {
 		//	continue
 		//}
 
-		tPOrder, err := futuresClient.NewCreateOrderService().Symbol(ord.Symbol).Side(futures.SideType(ord.Side)).
+		tPOrder, err := BinFutCl().NewCreateOrderService().Symbol(ord.Symbol).Side(futures.SideType(ord.Side)).
 			Type(futures.OrderTypeLimit).Quantity(ord.Quantity).Price(ord.Price).TimeInForce("GTC").
 			PriceProtect(true).
 			Do(context.Background())
@@ -341,7 +339,7 @@ func TakeProfitOrders(sign Signal) {
 
 		fmt.Println(ord)
 
-		tPOrder, err := futuresClient.NewCreateOrderService().Symbol(ord.Symbol).Side(futures.SideType(ord.Side)).
+		tPOrder, err := BinFutCl().NewCreateOrderService().Symbol(ord.Symbol).Side(futures.SideType(ord.Side)).
 			Type(futures.OrderTypeLimit).Quantity(ord.Quantity).Price(ord.Price).TimeInForce("GTC").
 			PriceProtect(true).
 			Do(context.Background())
@@ -397,7 +395,7 @@ func StopLossOrder(sign Signal) {
 
 	fmt.Println(ord)
 
-	tPOrder, err := futuresClient.NewCreateOrderService().Symbol(ord.Symbol).Side(futures.SideType(ord.Side)).
+	tPOrder, err := BinFutCl().NewCreateOrderService().Symbol(ord.Symbol).Side(futures.SideType(ord.Side)).
 		Type(futures.OrderTypeStopMarket).StopPrice(ord.Price).TimeInForce("GTC").
 		PriceProtect(true).ClosePosition(true).
 		Do(context.Background())
